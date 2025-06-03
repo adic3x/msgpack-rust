@@ -513,7 +513,7 @@ impl<W, C: SerializerConfig> From<&Serializer<W, C>> for UnknownLengthCompound {
 #[derive(Debug)]
 #[doc(hidden)]
 pub struct MaybeUnknownLengthCompound<'a, W, C> {
-    se: &'a mut Serializer<W, C>,
+    pub se: &'a mut Serializer<W, C>,
     compound: Option<UnknownLengthCompound>,
 }
 
