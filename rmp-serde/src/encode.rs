@@ -530,14 +530,14 @@ impl<'a, W: Write + 'a, C: SerializerConfig> MaybeUnknownLengthCompound<'a, W, C
             None => {
                 let mut seq = (&mut *self.se).serialize_seq(len)?;
                 for v in iter {
-                    seq.serialize_element(v)?;
+                    seq.serialize_element(&v)?;
                 }
                 SerializeSeq::end(seq)
             },
             Some(buf) => {
                 let mut seq = (&mut buf.se).serialize_seq(len)?;
                 for v in iter {
-                    seq.serialize_element(v)?;
+                    seq.serialize_element(&v)?;
                 }
                 SerializeSeq::end(seq)?;
                 buf.elem_count += 1;
