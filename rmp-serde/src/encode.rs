@@ -518,10 +518,13 @@ pub struct MaybeUnknownLengthCompound<'a, W, C> {
 }
 
 impl<'a, W, C> MaybeUnknownLengthCompound<'a, W, C> {
-    pub fn borrow_serializer(&mut self) -> &'a mut Serializer {
+    pub fn with_serializer<F>(&mut self, f: F) -> Result<(), rmp_serde::encode::Error>
+    where
+        F: FnOnce(&mut serde::Serializer) -> Result<(), rmp_serde::encode::Error>,
+    {
         match self.compound.as_mut() {
-            None => &mut *self.se,
-            Some(buf) => &mut buf.se,
+            None => f(&mut *self.se),
+            Some(buf) => f(&mut buf.se),
         }
     }
 }
