@@ -517,14 +517,32 @@ pub struct MaybeUnknownLengthCompound<'a, W, C> {
     compound: Option<UnknownLengthCompound>,
 }
 
-impl<'a, W, C> MaybeUnknownLengthCompound<'a, W, C> {
-    pub fn with_serializer<F>(&mut self, f: F) -> Result<(), rmp_serde::encode::Error>
-    where
-        F: FnOnce(&mut serde::Serializer) -> Result<(), rmp_serde::encode::Error>,
-    {
+impl<'a, W: Write + 'a, C: SerializerConfig> MaybeUnknownLengthCompound<'a, W, C> {
+    pub fn serialize_iter<T: Serialize + 'a>(&mut self, iter: impl Iterator<Item = &'a T>) -> Result<(), Error> {
+        use serde::Serializer as _;
+
+        let len = match iter.size_hint() {
+            (min @ _, Some(max @ _)) if min == max => Some(max),
+            _ => None,
+        };
+
         match self.compound.as_mut() {
-            None => f(&mut *self.se),
-            Some(buf) => f(&mut buf.se),
+            None => {
+                let mut seq = (&mut *self.se).serialize_seq(len)?;
+                for v in iter {
+                    seq.serialize_element(v)?;
+                }
+                SerializeSeq::end(seq)
+            },
+            Some(buf) => {
+                let mut seq = (&mut buf.se).serialize_seq(len)?;
+                for v in iter {
+                    seq.serialize_element(v)?;
+                }
+                SerializeSeq::end(seq)?;
+                buf.elem_count += 1;
+                Ok(())
+            }
         }
     }
 }
