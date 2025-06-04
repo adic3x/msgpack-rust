@@ -513,8 +513,17 @@ impl<W, C: SerializerConfig> From<&Serializer<W, C>> for UnknownLengthCompound {
 #[derive(Debug)]
 #[doc(hidden)]
 pub struct MaybeUnknownLengthCompound<'a, W, C> {
-    pub se: &'a mut Serializer<W, C>,
+    se: &'a mut Serializer<W, C>,
     compound: Option<UnknownLengthCompound>,
+}
+
+impl<'a, W, C> MaybeUnknownLengthCompound<'a, W, C> {
+    pub fn borrow_serializer(&mut self) -> &'a mut Serializer {
+        match self.compound.as_mut() {
+            None => &mut *self.se,
+            Some(buf) => &mut buf.se,
+        }
+    }
 }
 
 impl<'a, W: Write + 'a, C: SerializerConfig> SerializeSeq for MaybeUnknownLengthCompound<'a, W, C> {
