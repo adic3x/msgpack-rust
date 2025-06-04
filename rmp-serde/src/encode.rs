@@ -518,7 +518,7 @@ pub struct MaybeUnknownLengthCompound<'a, W, C> {
 }
 
 impl<'a, W: Write + 'a, C: SerializerConfig> MaybeUnknownLengthCompound<'a, W, C> {
-    pub fn serialize_iter<T: Serialize + 'a>(&mut self, iter: impl Iterator<Item = &'a T>) -> Result<(), Error> {
+    pub fn serialize_iter<T: Serialize>(&mut self, iter: impl Iterator<Item = T>) -> Result<(), Error> {
         use serde::Serializer as _;
 
         let len = match iter.size_hint() {
